@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+import argparse
+import socket
+
+LOCAL_CONTROL_PORT  = 49153
+
+def sendToControl(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HUB_IP, LOCAL_CONTROL_PORT))
+        s.sendall(bytes(message, "utf-8"))
+        response = s.recv(1024)
+        print(response)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('command', type=str, help='command to send to Hub')
+args = parser.parse_args()
+
+if args.command is not None:
+    sendToControl(args.command)
