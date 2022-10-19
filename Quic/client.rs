@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 use s2n_quic::{client::Connect, Client};
 use std::{error::Error, net::SocketAddr};
 use std::{thread, time};
@@ -12,13 +15,13 @@ use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
 use std::str::from_utf8;
 
-/// NOTE: this certificate is to be used for demonstration purposes only.
+/// NOTE: this certificate is to be used for demonstration purposes only!
 pub static CERT_PEM: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../quic/s2n-quic-core/certs/cert.pem"
 ));
 
-fn appendToCSV(path: &str, data: [&str; 2]){
+fn appendToCSV(path: &str, data: [&str; 3]){
         let mut file = std::fs::OpenOptions::new().write(true).append(true).open(path).unwrap();
         let mut wtr = csv::Writer::from_writer(file);
         wtr.write_record(&data).expect("unable to write to csv");
@@ -49,8 +52,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let start = SystemTime::now();
         let since_the_epoch = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
         println!("{:?}", since_the_epoch);
-
-	// parse sequence number
+        // parse sequence number
         let mut seqEnd = 0;
         for dataIndex in 0..data.len()
         {
@@ -63,37 +65,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         let seq = &data[..seqEnd];
         println!("Data: {:?}", data);
-        appendToCSV("./acks.csv", [&since_the_epoch.as_millis().to_string(), &std::str::from_utf8(&data).unwrap().to_string()])
+        appendToCSV("./acks.csv", [&since_the_epoch.as_millis().to_string(), &std::str::from_utf8(&data).unwrap().to_string(), &data.len().to_string()]);
       }});
 
     // spawn a task that copies responses from the server to stdout
+    /*tokio::spawn(async move {
+        let mut stdout = tokio::io::stdout();
+        let _ = tokio::io::copy(&mut receive_stream, &mut stdout).await;
+    });*/
 
+    //let sock = UdpSocket::bind("0.0.0.0:8080").await.unwrap();
     let t = thread::spawn(move || {
     let mut counter:u16 = 1;
     loop{
-    let ten_millis = time::Duration::from_millis(33);
+    let ten_millis = time::Duration::from_millis(16);
         thread::sleep(ten_millis);
         let start = SystemTime::now();
         let since_the_epoch = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
         let mut dataStr = counter.to_string();
         dataStr += "_" ;
-        /*dataStr += &since_the_epoch.as_millis().to_string();
+        dataStr += &since_the_epoch.as_millis().to_string();
         dataStr += "_";
         let rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(1024).map(char::from).collect();
-        dataStr += &rand_string;*/
+        dataStr += &rand_string;
         counter += 1;
         let b = Bytes::from(dataStr);
+        let bLen = b.len();
         send_stream.send_data(b);
-        appendToCSV("./tx.csv", [&since_the_epoch.as_millis().to_string(), &counter.to_string()])
+        appendToCSV("./tx.csv", [&since_the_epoch.as_millis().to_string(), &counter.to_string(), &bLen.to_string()]);
 
     }});
 
     t.join().unwrap();
     Ok(())
 }
-
-
-
-
-
-
