@@ -1,71 +1,73 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
+import socket
+import json
 
-use s2n_quic::{client::Connect, Client};
-use std::{error::Error, net::SocketAddr};
-use std::{thread, time};
-use tokio::net::UdpSocket;
-use bytes::Bytes;
+HOST = "0.0.0.0"
+HUB_CONTROL_PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+TO_CLIENT_PORTs = [65433, 65434, 65435, 65436]
+FROM_CLIENT_PORTs = [65443, 65444, 65445, 65446]
+ID_PORT_MAP = {'1': 49152}
 
-use bytes::{BytesMut, BufMut};
+def getUnusedPort():
+    pass
 
-use std::time::Duration;
-use std::time::{SystemTime, UNIX_EPOCH};
+def openUDPPort(id, port):
+    message = {}
+    message['id'] = id
+    message['port'] = port
+    message_json = json.dumps(message)
+    print(message_json)
+    dataProcessSock.sendto(bytes(message_json, "utf-8"), ("127.0.0.1", DATA_PROC_PORT))
+
+def parseControlData(data):
+    response = None
+    print(data)
+    message = json.loads(data.decode("utf-8"))
+    if message["message"] == "register":
+        id = message["id"]
+        
+        response = "confirm"
+        openUDPPort(id, 49152)
+        print(id)
+    '''
+    if "StartRx" in data:
+        id = 1
+        # port = #parse port
+        # forward command and ID to 3D Scene Generator
+        # forward command, ID, and port to DataProcess
+    if "StartTx" in data:
+        pass
+        # id = # parse id
+        # port = # get port from dictionary
+        # forward command and ID to 3D Scene Generator
+        # DataProcess sends data to the 3D Scene Generator
+    if "KeepAlive" in data:
+        pass
+        # id = # parse id
+    if "DeRegister" in data:
+        pass
+        #id = # parse id
+        # release all resources kept for id
+    '''
+    return response
 
 
-/// NOTE: this certificate is to be used for demonstration purposes only!
-pub static CERT_PEM: &str = include_str!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../../quic/s2n-quic-core/certs/cert.pem"
-));
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let client = Client::builder()
-        .with_tls(CERT_PEM)?
-        .with_io("0.0.0.0:0")?
-        .start()?;
+DATA_PROC_PORT = 49155
+dataProcessSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    let addr: SocketAddr = "127.0.0.1:4433".parse()?;
-    let connect = Connect::new(addr).with_server_name("localhost");
-    let mut connection = client.connect(connect).await?;
 
-    // ensure the connection doesn't time out with inactivity
-    connection.keep_alive(true)?;
-
-    // open a new stream and split the receiving and sending sides
-    let stream = connection.open_bidirectional_stream().await?;
-    let (mut receive_stream, mut send_stream) = stream.split();
-
-    // spawn a task that copies responses from the server to stdout
-    tokio::spawn(async move {
-        let mut stdout = tokio::io::stdout();
-        let _ = tokio::io::copy(&mut receive_stream, &mut stdout).await;
-    });
-
-    //let sock = UdpSocket::bind("0.0.0.0:8080").await.unwrap();
-    let t = thread::spawn(move || {
-                //let mut buf = [0; 1024];
-    let mut counter = 1;
-    loop{
-    let ten_millis = time::Duration::from_millis(30);
-        thread::sleep(ten_millis);
-        let start = SystemTime::now();
-        let since_the_epoch = start.duration_since(UNIX_EPOCH).expect("Time went backwards");
-        let mut dataStr = since_the_epoch.as_millis().to_string();
-        dataStr += "_" ;
-        dataStr += "data";
-        dataStr += &counter.to_string();
-        counter += 1;
-        let b = Bytes::from(dataStr);
-        send_stream.send_data(b);
-    }});
-    //Ok(());
-    t.join().unwrap();
-    Ok(())
-    // copy data from stdin and send it to the server
-    //let mut stdin = tokio::io::stdin();
-    //tokio::io::copy(&mut stdin, &mut send_stream).await?;
-
-    //Ok(())
-}
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, HUB_CONTROL_PORT))
+    while True:
+        s.listen()
+        conn, addr = s.accept()
+        print("Listening ... ")
+        with conn:
+            print(f"Connected by {addr}")
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                response = parseControlData(data)
+                if response != None:
+                    conn.send(bytes(response, "utf-8"))
