@@ -24,7 +24,7 @@ def register():
     sendControlMessage(message_json)
 
 def processUIMessage(message):
-    response = 'error.'
+    response = None
     if message == 'register':
         register()
         response = 'message sent to hub'
