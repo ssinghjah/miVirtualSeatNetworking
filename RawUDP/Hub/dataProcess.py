@@ -5,7 +5,9 @@ import json
 
 KEEP_ALIVE_INTERVAL = 5
 CONTROL_PORT = 49155
-APP_PORT = 49148
+APP_PORT_RECEIVE = 49148
+DATA_BUFFER_SIZE = 65000
+APP_PORT_SEND = 49147
 
 def keepAlive(sock, addr):
     while True:
@@ -15,14 +17,16 @@ def keepAlive(sock, addr):
 
 def listenForData(sock):
     while True:
-        data, addr = sock.recvfrom(1024)
+        data, addr = sock.recvfrom(DATA_BUFFER_SIZE)
         print ("Message: ", data)
+        appSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        appSock.sendto(data, ("0.0.0.0", APP_PORT_SEND))
 
-def publishFromApp(APP_PORT, dataSock, addr):
+def publishFromApp(dataSock, addr):
     appSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    appSock.bind(("0.0.0.0", APP_PORT))
+    appSock.bind(("0.0.0.0", APP_PORT_RECEIVE))
     while True:
-        data = appSock.recv(1024)
+        data = appSock.recv(DATA_BUFFER_SIZE)
         print("received from app: " + str(data))
         dataSock.sendto(data, addr)
     
@@ -30,11 +34,11 @@ def launchDataProcess(port, ID):
     HOST = "0.0.0.0"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((HOST, port))
-    data, addr = sock.recvfrom(1024)    
+    data, addr = sock.recvfrom(DATA_BUFFER_SIZE)    
     print ("Message: ", data)
     threading.Thread(target=keepAlive, args=(sock, addr,)).start()
     threading.Thread(target=listenForData, args=(sock,)).start()
-    threading.Thread(target=publishFromApp, args=(APP_PORT, sock,addr,)).start()
+    threading.Thread(target=publishFromApp, args=( sock,addr,)).start()
 
     
 def parseControlMessage(controlMessage):
