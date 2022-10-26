@@ -5,19 +5,27 @@ import json
 
 KEEP_ALIVE_INTERVAL = 5
 CONTROL_PORT = 49155
+APP_PORT = 49148
 
 def keepAlive(sock, addr):
     while True:
         sleep(KEEP_ALIVE_INTERVAL)
         print("sending keep alive ... ")
-        sock.sendto(b"Keep alive from Hub ...", addr)        
+        sock.sendto(b"Keep alive from Hub ...", addr)
 
 def listenForData(sock):
     while True:
-        data, addr = sock.recvfrom(1024)    
+        data, addr = sock.recvfrom(1024)
         print ("Message: ", data)
 
-        
+def publishFromApp(APP_PORT, dataSock, addr):
+    appSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    appSock.bind(("0.0.0.0", APP_PORT))
+    while True:
+        data = appSock.recv(1024)
+        print("received from app: " + str(data))
+        dataSock.sendto(data, addr)
+    
 def launchDataProcess(port, ID):               
     HOST = "0.0.0.0"
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,6 +34,7 @@ def launchDataProcess(port, ID):
     print ("Message: ", data)
     threading.Thread(target=keepAlive, args=(sock, addr,)).start()
     threading.Thread(target=listenForData, args=(sock,)).start()
+    threading.Thread(target=publishFromApp, args=(APP_PORT, sock,addr,)).start()
 
     
 def parseControlMessage(controlMessage):
@@ -44,4 +53,3 @@ controlSocket.bind(("127.0.0.1", CONTROL_PORT))
 while True:
     controlMessage, addr = controlSocket.recvfrom(1024)
     parseControlMessage(controlMessage)
-    
