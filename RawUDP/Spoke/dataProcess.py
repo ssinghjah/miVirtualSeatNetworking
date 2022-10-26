@@ -7,7 +7,7 @@ HUB_DATA_PORT = 49152
 APP_PORT =49148
 LOCAL_IP = "0.0.0.0"
 Message = "Hello, Server"
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 65000
 
 def receive(sock, ip, port):
     while True:
@@ -19,11 +19,10 @@ def publish(localIP, appPort, hubSock, hubIP, hubPort):
     appSock.bind((localIP, appPort))
     while True:
         data = appSock.recv(BUFFER_SIZE)
-        print("Received from App: " + data.decode("utf-8"))
+        #print("Received from App: " + data.decode("utf-8"))
         hubSock.sendto(data, (hubIP, hubPort))
 
 hubSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-hubSock.connect((HUB_IP, HUB_DATA_PORT))
 hubSock.sendto(bytes(Message, "utf-8"), (HUB_IP, HUB_DATA_PORT))
 threading.Thread(target=publish, args=(LOCAL_IP, APP_PORT, hubSock, HUB_IP, HUB_DATA_PORT)).start()
 threading.Thread(target=receive, args=(hubSock, HUB_IP, HUB_DATA_PORT)).start()
