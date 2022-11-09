@@ -5,10 +5,10 @@ import time
 import os
 
 DATA_PROC_IP = "0.0.0.0"
-DATA_PROC_PORT =49148
+DATA_PROC_PORT =49153
 Message = "Hello, Server"
 BUFFER_SIZE = 65000
-INTER_MESSAGE_INTERVAL = 1
+INTER_MESSAGE_INTERVAL = 3
 rxMessage = None
 SEND_ACKs = True
 TX = True

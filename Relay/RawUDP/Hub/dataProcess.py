@@ -21,7 +21,7 @@ def listenForData(sock):
         print ("Message: ", data)
         appSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         appSock.sendto(data, ("0.0.0.0", APP_PORT_SEND))
-
+        
 def publishFromApp(dataSock, addr):
     appSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     appSock.bind(("0.0.0.0", APP_PORT_RECEIVE))
