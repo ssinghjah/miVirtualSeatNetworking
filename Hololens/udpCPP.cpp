@@ -10,7 +10,7 @@ int main()
 {
 
   int SERVER_PORT = 1234;
-  int SERVER_IP = 'ec2-3-101-152-92.us-west-1.compute.amazonaws.com';
+  const char* SERVER_IP = 'ec2-3-101-152-92.us-west-1.compute.amazonaws.com';
   int sockfd;
   int BUFF_LEN = 1024;
   struct sockaddr_in serverAddr;
