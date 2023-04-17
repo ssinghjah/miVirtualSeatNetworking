@@ -1,0 +1,16 @@
+steps:
+1 Install Java and set the JAVA_HOME path. Refer to https://www.youtube.com/watch?v=h3R3PBYNe34 for installation
+
+2 Install Kafka by referring to https://www.youtube.com/watch?v=K_DY_FuuXKA&list=PLjfRmoYoxpNrs0VmIq6mOTqXP52RfZdRf&index=8
+
+
+For ubuntu server the java path is as follow
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export PATH=$JAVA_HOME/bin:/home/ubuntu/kafka_2.13-3.4.0/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+
+
+
+Kafka port number is 9092

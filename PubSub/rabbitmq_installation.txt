@@ -1,0 +1,7 @@
+Install RabbitMQ by refering 
+
+https://www.cherryservers.com/blog/how-to-install-and-start-using-rabbitmq-on-ubuntu-22-04
+
+RabbitMQ uses 5672 port number 
+
+web port number of RabbitMQ 15672
