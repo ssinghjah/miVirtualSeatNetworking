@@ -7,6 +7,9 @@ import pandas as pd
 import os
 from os import listdir
 
+
+FPS = 30
+
 class Image(object):
 
     __slots__ = ["filename"]
@@ -36,6 +39,7 @@ l1 = []
 
 folder_dir = "C:/Users/DELL/Downloads/RA doc/rabbitmq/ConferenceRoom/"
 for images in os.listdir(folder_dir):
+    # time.sleep(1/FPS)
     # print(images)
     pt = folder_dir+images
     print(pt)
@@ -52,9 +56,9 @@ for images in os.listdir(folder_dir):
 # for i in range(5000):
 #     time.sleep(0.001)
 #     msg = {"send_timestamp":time.time(),"order_id":i}
-    msg = {"name":images,"payload":str(data) }
+    msg = {"name":images,"payload":str(data) ,"send_timestamp":time.time()}
     channel.basic_publish(exchange='', routing_key='hello', body=json.dumps(msg))
-    break
+    # break
 #     l1.append(msg)
 # pd.DataFrame(l1).to_csv("producer_data_1ms.csv")
 # print("task completed")

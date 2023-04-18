@@ -11,7 +11,7 @@ def main():
     channel.queue_declare(queue='hello')
     
     # Since RabbitMQ works asynchronously, every time you receive a message, a callback function is called. We will simply print the message body to the terminal 
-    # l1 = []
+    l1 = []
     def callback(ch, method, properties, body):
 
         msg = json.loads(body.decode("utf-8"))
@@ -21,7 +21,7 @@ def main():
         # print()
         Payload = ast.literal_eval(Payload)
         print(type(Payload))
-        pt = "C:/Users/DELL/Downloads/RA doc/rabbitmq/" + msg["name"]
+        pt = "C:/Users/DELL/Downloads/RA doc/rabbitmq_received_images/" + msg["name"]
 
         with open(pt, "wb") as f:
             f.write(Payload)
@@ -32,10 +32,10 @@ def main():
         # print(" [x] Received %r" % body)
         # print(body)
         # msg = json.loads(body.decode())
-        # msg["receive_timestamp"] = time.time()
+        msg["receive_timestamp"] = time.time()
         # print(msg)
-        # l1.append(msg)
-        # pd.DataFrame(l1).to_csv("consumer_data_1ms.csv")
+        l1.append(msg)
+        pd.DataFrame(l1).to_csv("received_images.csv")
         # print(body["send_timestamp"])
 
     # Consume a message from a queue. The auto_ack option simplifies our example, as we do not need to send back an acknowledgement query to RabbitMQ which we would normally want in production
