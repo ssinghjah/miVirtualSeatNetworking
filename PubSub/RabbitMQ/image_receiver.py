@@ -21,7 +21,7 @@ def main():
         # print()
         Payload = ast.literal_eval(Payload)
         print(type(Payload))
-        pt = "C:/Users/DELL/Downloads/RA doc/rabbitmq_received_images/" + msg["name"]
+        pt = "./" + msg["name"]
 
         with open(pt, "wb") as f:
             f.write(Payload)
